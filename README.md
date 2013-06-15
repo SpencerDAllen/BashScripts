@@ -1,4 +1,4 @@
 BASH SCRIPTS
 
-PerformanceBackup
+PerformanceBackup:
 A script for creating compressed tar backups using pbzip2. A progress bar is provided via use of pv.
