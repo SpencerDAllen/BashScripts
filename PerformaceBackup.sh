@@ -33,8 +33,8 @@ LabError="$colRed [ERROR] $colDefault"
 
 #### Add functions
 DestinationDir () {
-booDestUsed=1
 	if [ -d $1 ]; then
+		booDestUsed=1
 		strTargetDir=$1
 		if [ $strTargetDir == "*/" ]; then
 			strTargetDir=$strTargetDir"/"
@@ -47,8 +47,8 @@ booDestUsed=1
 }
 
 ExcludeDirs () {
-booExcludeUsed=1
 	if [ -d $1 ]; then
+		booExcludeUsed=1
 		StrUserExclude=$StrUserExclude"--exclude=.$1 "
 		echo -e $labInfo"Excluding directory " $1
 	else
@@ -57,8 +57,8 @@ booExcludeUsed=1
 }
 
 Threads () {
-booThreadUsed=1
 	if [ "$1" -eq "$1" 2>/dev/null ]; then
+		booThreadUsed=1
 		strThreads=" -p"$1" "
 		echo -e $labInfo"Using the specified $1 processing threads"
 	else
@@ -67,10 +67,10 @@ booThreadUsed=1
 }
 
 Logging () {
-booLogUsed=1
+	booLogUsed=1
 	strLogDest="$strTargetDir$strLogName"
 	StrUserExclude=$StrUserExclude"--exclude=.$strLogDest "
-	echo -e $labInfo"The log file will be created at "$strLogDest
+	echo -e $labInfo"A log file will be created at "$strLogDest
 }
 
 Help () {
@@ -161,17 +161,17 @@ fi
 
 # Check for excluded directories...
 if [ "$booExcludeUsed" = "0" ]; then
-	echo -e $labInfo"No additional exclude directories specified using defaults"
+	echo -e $labInfo"No additional exclude directories were specified using defaults"
 fi
 
 # Check for processing thread limit
 if [ "$booThreadUsed" = "0" ]; then
-	echo -e $labInfo"No specific amount of processing threads specified attempting to autodetect"
+	echo -e $labInfo"No specific amount of processing threads were specified attempting to autodetect"
 fi
 
 # Check for logging...
 if [ "$booLogUsed" = "0" ]; then
-	echo -e $labInfo"Log file will not be created"
+	echo -e $labInfo"No log file will be created"
 else
 	echo -e "The backup was created with the following tar command" > $strLogDest
 	echo -e "It is included here for use as a reference when rebuilding from your backup" >> $strLogDest
