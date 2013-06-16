@@ -22,6 +22,7 @@ strLogName="$(hostname)-Backup.log"
 booDestUsed=0
 booExcludeUsed=0
 booThreadUsed=0
+booTimeUsed=0
 booLogUsed=0
 
 # Label strings
@@ -38,7 +39,6 @@ DestinationDir () {
 			strTargetDir=$strTargetDir"/"
 		fi
 		echo -e $labInfo"The target directory is " $strTargetDir
-		echo -e $labInfo"The backup file will be created at " $strTargetDir$strFileName
 	else
 		echo -e $labError"The directory $1 does not exits using home directory"
 	fi
@@ -54,21 +54,26 @@ ExcludeDirs () {
 	fi
 }
 
-Threads () {
+Procs () {
 	if [ "$1" -eq "$1" 2>/dev/null ]; then
 		booThreadUsed=1
 		strThreads=" -p"$1" "
 		echo -e $labInfo"Using the specified $1 processing threads"
 	else
-		echo -e $labError"Invalid input, thread entry must be an interger."
+		echo -e $labError"Invalid input, thread entry must be an interger"
 	fi
+}
+
+Time () {
+	booTimeUsed=1
+	strFileName="$(date +%Y-%m-%d_%H:%M)-$(hostname).tar.bz2"
+	strLogName="$(date +%Y-%m-%d_%H:%M)-$(hostname)-Backup.log"
 }
 
 Logging () {
 	booLogUsed=1
 	strLogDest="$strTargetDir$strLogName"
 	strUserExclude=$strUserExclude"--exclude=.$strLogDest "
-	echo -e $labInfo"A log file will be created at "$strLogDest
 }
 
 Help () {
@@ -105,10 +110,14 @@ Help () {
 "		Excludes all files ending in .exclude found in the /path/to/file directory\n\n"\
 "		Example: -e /path/to/first/exclude -e /path/to/second/exclude\n"\
 "		Excludes both specified directories.\n\n"\
-"  -t		Used to specify the number of processing threads used for compression.\n"\
+"  -p		Used to specify the number of processing threads used for compression.\n"\
 "		If this option is ommited the autodetected # of processors will be used.\n"\
 "		(or 2 processing threads will be used if autodetect is not supported).\n"\
-"		Example: -t 4\n\n"\
+"		Example: -p 4\n\n"\
+"  -t		Used to append a date timestamp to the beginning of all files names.\n"\
+"		The date timestamp will appear as YYYY-MM-DD_HH:MM.\n"\
+"		If this option is ommited no date timestamp will be added.\n"\
+"		Example -t\n\n"\
 "  -l		Used to create a log file of the backup process.\n"\
 "		Log files will be saved to the same directory as the backup.\n"\
 "		If this option is ommited no log file will be created.\n"\
@@ -121,7 +130,7 @@ Help () {
 "	and exclude the directory ~/Music. Autodetection will be used to find the number\n"\
 "	of processing threads to use (or 2 processing threads will be used if autodetect\n"\
 "	is not supported)\n\n"\
-"	Example: -e ~/Music -t 4 -l\n"\
+"	Example: -e ~/Music -p 4 -l\n"\
 "	This example will place the backup and log files in the users home directory as well as\n"\
 "	excluding the directory ~/Music while using four proccessing threads for compression."\ 
 	exit 1
@@ -136,13 +145,14 @@ hash pv 2>/dev/null || { echo -e $labError"I require pv but it's not installed. 
 hash pbzip2 2>/dev/null || { echo -e $labError"I require pbzip2 but it's not installed.  Aborting."; Help; }
 
 #### Process arguments
-while getopts d:e:t:lh option
+while getopts d:e:p:tlh option
 do
         case "${option}"
         in
 		d) DestinationDir ${OPTARG};;
 		e) ExcludeDirs ${OPTARG};;
-		t) Threads ${OPTARG};;
+		p) Procs ${OPTARG};;
+		t) Time;;
 		l) Logging;;
 		h) Help;;
 		\?) Help;;
@@ -155,6 +165,9 @@ pushd / 1>/dev/null
 # Check for a destination directory...
 if [ "$booDestUsed" = "0" ]; then
 	echo -e $labInfo"No target directory was specified using home directory " $strTargetDir
+	echo -e $labInfo"The backup file will be created at " $strTargetDir$strFileName
+else
+	echo -e $labInfo"The backup file will be created at " $strTargetDir$strFileName
 fi
 
 # Check for excluded directories...
@@ -167,10 +180,16 @@ if [ "$booThreadUsed" = "0" ]; then
 	echo -e $labInfo"No specific amount of processing threads were specified attempting to autodetect"
 fi
 
+# Check for time appending
+if [ "$booTimeUsed" = "0" ]; then
+	echo -e $labInfo"No date time stamp will be added to the filenames."
+fi
+
 # Check for logging...
 if [ "$booLogUsed" = "0" ]; then
 	echo -e $labInfo"No log file will be created"
 else
+	echo -e $labInfo"A log file will be created at "$strLogDest
 	echo -e "The backup was created with the following tar command" > $strLogDest
 	echo -e "It is included here for use as a reference when rebuilding from your backup" >> $strLogDest
 	echo -e "tar -cjpf --exclude=.$strTargetDir$strFileName $strDefaultExclude $strUserExclude" >> $strLogDest
