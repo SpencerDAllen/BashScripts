@@ -47,7 +47,7 @@ DestinationDir () {
 ExcludeDirs () {
 	if [ -d $1 ]; then
 		booExcludeUsed=1
-		StrUserExclude=$StrUserExclude"--exclude=.$1 "
+		strUserExclude=$strUserExclude"--exclude=.$1 "
 		echo -e $labInfo"Excluding directory " $1
 	else
 		echo -e $labWarn $1" cannot be excluded because it does not exist"
@@ -67,7 +67,7 @@ Threads () {
 Logging () {
 	booLogUsed=1
 	strLogDest="$strTargetDir$strLogName"
-	StrUserExclude=$StrUserExclude"--exclude=.$strLogDest "
+	strUserExclude=$strUserExclude"--exclude=.$strLogDest "
 	echo -e $labInfo"A log file will be created at "$strLogDest
 }
 
@@ -173,12 +173,12 @@ if [ "$booLogUsed" = "0" ]; then
 else
 	echo -e "The backup was created with the following tar command" > $strLogDest
 	echo -e "It is included here for use as a reference when rebuilding from your backup" >> $strLogDest
-	echo -e "tar -cjpf --exclude=.$strTargetDir$strFileName $strDefaultExclude $StrUserExclude" >> $strLogDest
+	echo -e "tar -cjpf --exclude=.$strTargetDir$strFileName $strDefaultExclude $strUserExclude" >> $strLogDest
 	echo -e "Below is a list of everything that was included in your backup" >> $strLogDest
 fi
 
 # We're ready to run our command...
-tar -cvpf - --exclude=.$strTargetDir$strFileName $strDefaultExclude $StrUserExclude. 2>>$strLogDest | pv -s $(du -sb --exclude=.$strTargetDir$strFileName $strDefaultExclude $StrUserExclude. 2>>/dev/null | awk '{print $1}') | pbzip2 -cf$strThreads> $strTargetDir$strFileName
+tar -cvpf - --exclude=.$strTargetDir$strFileName $strDefaultExclude $strUserExclude. 2>>$strLogDest | pv -s $(du -sb --exclude=.$strTargetDir$strFileName $strDefaultExclude $strUserExclude. 2>>/dev/null | awk '{print $1}') | pbzip2 -cf$strThreads> $strTargetDir$strFileName
 
 echo -e $labInfo"Script Finished!"
 exit 0
