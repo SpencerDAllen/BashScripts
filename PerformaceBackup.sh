@@ -28,8 +28,8 @@ booLogUsed=0
 
 # Label strings
 labInfo="$colGreen [INFO] $colDefault"
-LabWarn="$colYellow [WARNING] $colDefault"
-LabError="$colRed [ERROR] $colDefault"
+labWarn="$colYellow [WARNING] $colDefault"
+labError="$colRed [ERROR] $colDefault"
 
 #### Add functions
 DestinationDir () {
@@ -42,7 +42,7 @@ DestinationDir () {
 		echo -e $labInfo"The target directory is " $strTargetDir
 		echo -e $labInfo"The backup file will be created at " $strTargetDir$strFileName
 	else
-		echo -e $LabError"The directory $1 does not exits using home directory"
+		echo -e $labError"The directory $1 does not exits using home directory"
 	fi
 }
 
@@ -52,7 +52,7 @@ ExcludeDirs () {
 		StrUserExclude=$StrUserExclude"--exclude=.$1 "
 		echo -e $labInfo"Excluding directory " $1
 	else
-		echo -e $LabWarn $1" cannot be excluded because it does not exist"
+		echo -e $labWarn $1" cannot be excluded because it does not exist"
 	fi
 }
 
@@ -62,7 +62,7 @@ Threads () {
 		strThreads=" -p"$1" "
 		echo -e $labInfo"Using the specified $1 processing threads"
 	else
-		echo -e $LabError"Invalid input, thread entry must be an interger."
+		echo -e $labError"Invalid input, thread entry must be an interger."
 	fi
 }
 
@@ -131,11 +131,11 @@ Help () {
 
 # Check for requirments.
 if [ $EUID -ne 0 ]; then
-	echo -e $LabError"Only root can do that. Aborting."
+	echo -e $labError"Only root can do that. Aborting."
 	Help
 fi
-hash pv 2>/dev/null || { echo -e $LabError"I require pv but it's not installed.  Aborting."; Help; }
-hash pbzip2 2>/dev/null || { echo -e $LabError"I require pbzip2 but it's not installed.  Aborting."; Help; }
+hash pv 2>/dev/null || { echo -e $labError"I require pv but it's not installed.  Aborting."; Help; }
+hash pbzip2 2>/dev/null || { echo -e $labError"I require pbzip2 but it's not installed.  Aborting."; Help; }
 
 #### Process arguments
 while getopts d:e:t:lh option
