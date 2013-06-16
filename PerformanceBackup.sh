@@ -81,16 +81,14 @@ Help () {
 "NAME:\n"\
 "	Performance backup - a high performance backup script.\n\n"\
 "SYNOPSIS:\n"\
-"	PerformanceBackup.sh -d [options] -e [options] -t [options] -l \n\n"\
+"	PerformanceBackup.sh -d [options] -e [options] -p [options] -t -l -h\n\n"\
 "DESCRIPTION:\n"\
 "	Quickly creates a highly compressed tar backup of your entire system while providing\n"\
-"	a progress bar for monitoring.\n"\
-"	For conveniance and to avoid errors certain root directories are excluded from the\n"\
-"	backup by default.\n"\
-"	These directories must be recreated when restoring from the backup.\n"\
-"	The default excluded directories are /proc /tmp /mnt /media /dev and /sys\n"\
-"	Backup files will be named HOSTNAME.tar.bz2\n"\
-"	Log files will be named HOSTNAME-Backup.log\n\n"\
+"	a progress bar for monitoring. For conveniance and to avoid errors certain root\n"\
+"	directories are excluded from the backup by default. These directories must be recreated\n"\
+"	when restoring from the backup.	The default excluded directories are /proc /tmp /mnt\n"\
+"	/media /dev and /sys. Backup files will be named HOSTNAME.tar.bz2. Log files will be named\n"\ 
+"	HOSTNAME-Backup.log\n\n"\
 "PREREQUISITES:\n"\
 "	This script must run as root and it requires the use of PV and PBZIP2 to complete it's tasks.\n"\
 "	Please install them prior to running this script.\n\n"\
@@ -98,17 +96,17 @@ Help () {
 "  -d		Used to specify the directory that the backup will be created in.\n"\
 "		This directory can be local or remote.\n"\
 "		If this option is ommited the users home directory will be used.\n"\
-"                Example: -d /path/to/backup/directory\n\n"\
+"                Example: -d /backup/directory\n\n"\
 "  -e		Used to exclude additional directories, files, or patterms.\n"\
 "		The use of multiple exclude paths is permissable.\n"\
 "		If this option is ommited only the default directories are ommited.\n\n"\
-"		Example: -e /directory/to/exclude\n"\
-"		Excludes the /directory/to/exclude directory\n\n"\
-"		Example: -e /path/to/file/to.exclude\n"\
-"		Excludes the to.exclude file in the /path/to/file directory.\n\n"\
-"		Example: -e /path/to/file/*.exclude\n"\
-"		Excludes all files ending in .exclude found in the /path/to/file directory\n\n"\
-"		Example: -e /path/to/first/exclude -e /path/to/second/exclude\n"\
+"		Example: -e /exclude\n"\
+"		Excludes the /exclude directory\n\n"\
+"		Example: -e /path/exclude.file\n"\
+"		Excludes the exclude.file file in the /path directory.\n\n"\
+"		Example: -e /path/*.exclude\n"\
+"		Excludes all files ending in .exclude found in the /path directory\n\n"\
+"		Example: -e /first/exclude -e /second/exclude\n"\
 "		Excludes both specified directories.\n\n"\
 "  -p		Used to specify the number of processing threads used for compression.\n"\
 "		If this option is ommited the autodetected # of processors will be used.\n"\
@@ -129,10 +127,11 @@ Help () {
 "	This example will will place backup file in the directory /path/to/backup/directory\n"\
 "	and exclude the directory ~/Music. Autodetection will be used to find the number\n"\
 "	of processing threads to use (or 2 processing threads will be used if autodetect\n"\
-"	is not supported)\n\n"\
-"	Example: -e ~/Music -p 4 -l\n"\
-"	This example will place the backup and log files in the users home directory as well as\n"\
-"	excluding the directory ~/Music while using four proccessing threads for compression."\ 
+"	is not supported) and no timestamp will be added.\n\n"\
+"	Example: -e ~/Music -p 4 -t -l\n"\
+"	This example will place the backup and log files, named with a timestamp, in the users\n"\
+"	home directory as well as excluding the directory ~/Music while using four proccessing\n"\
+"	threads for compression."\ 
 	exit 1
 }
 
