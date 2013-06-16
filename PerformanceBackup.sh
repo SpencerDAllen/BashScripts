@@ -13,8 +13,7 @@ colDefault="\033[0m"
 
 # Strings
 strDefaultExclude="--exclude=./proc --exclude=./tmp --exclude=./mnt --exclude=./media --exclude=./dev --exclude=./sys"
-strUserDir=$(getent passwd $SUDO_USER | cut -d: -f6)
-strTargetDir=$strUserDir
+strTargetDir=$(getent passwd $SUDO_USER | cut -d: -f6)"/"
 strLogDest="/dev/null "
 strHostName=$(hostname)
 strFileName="$strHostName.tar.bz2"
