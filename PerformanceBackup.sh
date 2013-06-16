@@ -76,9 +76,9 @@ Logging () {
 Help () {
 	echo -e \
 "NAME:\n"\
-"	Performace backup - a high performace backup script.\n\n"\
+"	Performance backup - a high performance backup script.\n\n"\
 "SYNOPSIS:\n"\
-"	PerformaceBackup.sh -d [options] -e [options] -t [options] -l \n\n"\
+"	PerformanceBackup.sh -d [options] -e [options] -t [options] -l \n\n"\
 "DESCRIPTION:\n"\
 "	Quickly creates a highly compressed tar backup of your entire system while providing\n"\
 "	a progress bar for monitoring.\n"\
