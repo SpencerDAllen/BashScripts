@@ -44,13 +44,21 @@ DestinationDir () {
 	fi
 }
 
-ExcludeDirs () {
-	if [ -d $1 ]; then
-		booExcludeUsed=1
-		strUserExclude=$strUserExclude"--exclude=.$1 "
-		echo -e $labInfo"Excluding directory " $1
+Exclude () {
+	if [[ "$1" != /* ]]; then
+		echo -e $labWarn $1" is not an absolute path and cannot be excluded."
 	else
-		echo -e $labWarn $1" cannot be excluded because it does not exist"
+		if [ -d $1 ]; then
+			booExcludeUsed=1
+			strUserExclude=$strUserExclude"--exclude=.$1 "
+			echo -e $labInfo"Excluding directory " $1
+		elif [ -f $1 ]; then
+			booExcludeUsed=1
+			strUserExclude=$strUserExclude"--exclude=.$1 "
+			echo -e $labInfo"Excluding file " $1
+		else
+			echo -e $labWarn $1" cannot be excluded because it does not exist"
+		fi
 	fi
 }
 
@@ -86,52 +94,46 @@ Help () {
 "	Quickly creates a highly compressed tar backup of your entire system while providing\n"\
 "	a progress bar for monitoring. For conveniance and to avoid errors certain root\n"\
 "	directories are excluded from the backup by default. These directories must be recreated\n"\
-"	when restoring from the backup.	The default excluded directories are /proc /tmp /mnt\n"\
-"	/media /dev and /sys. Backup files will be named HOSTNAME.tar.bz2. Log files will be named\n"\ 
-"	HOSTNAME-Backup.log\n\n"\
+"	when restoring from the backup. The default excluded directories are /proc /tmp /mnt/media\n"\
+"	/dev and /sys. Backup and log files will be named HOSTNAME.tar.bz2 and HOSTNAME-Backup.log\n"\
+"	respectivly.\n\n"\
 "PREREQUISITES:\n"\
 "	This script must run as root and it requires the use of PV and PBZIP2 to complete it's tasks.\n"\
 "	Please install them prior to running this script.\n\n"\
 "OPTIONS:\n"\
-"  -d		Used to specify the directory that the backup will be created in.\n"\
-"		This directory can be local or remote.\n"\
-"		If this option is ommited the users home directory will be used.\n"\
+"  -d		Used to specify the directory that the backup will be created in. This directory can\n"\
+"		be local or remote. If this option is ommited the users home directory will be used.\n"\
 "                Example: -d /backup/directory\n\n"\
-"  -e		Used to exclude additional directories, files, or patterms.\n"\
-"		The use of multiple exclude paths is permissable.\n"\
-"		If this option is ommited only the default directories are ommited.\n\n"\
+"  -e		Used to exclude additional files or directories. The use of multiple exclude paths is\n"\
+"		permissable. If this option is ommited only the default directories are ommited.\n\n"\
 "		Example: -e /exclude\n"\
 "		Excludes the /exclude directory\n\n"\
 "		Example: -e /path/exclude.file\n"\
 "		Excludes the exclude.file file in the /path directory.\n\n"\
-"		Example: -e /path/*.exclude\n"\
-"		Excludes all files ending in .exclude found in the /path directory\n\n"\
 "		Example: -e /first/exclude -e /second/exclude\n"\
 "		Excludes both specified directories.\n\n"\
-"  -p		Used to specify the number of processing threads used for compression.\n"\
-"		If this option is ommited the autodetected # of processors will be used.\n"\
-"		(or 2 processing threads will be used if autodetect is not supported).\n"\
+"  -p		Used to specify the number of processing threads used for compression. If this option is\n"\
+"		ommited the autodetected number of processors will be used or two processing threads\n"\
+"		will be used if autodetect is not supported.\n"\
 "		Example: -p 4\n\n"\
-"  -t		Used to append a timestamp to the beginning of all files names.\n"\
-"		The timestamp will appear as YYYY-MM-DD_HH:MM.\n"\
-"		If this option is ommited no date timestamp will be added.\n"\
+"  -t		Used to append a timestamp to the beginning of all files names. The timestamp will\n"\
+"		appear as YYYY-MM-DD_HH:MM. If this option is ommited no date timestamp will be added.\n"\
 "		Example -t\n\n"\
-"  -l		Used to create a log file of the backup process.\n"\
-"		Log files will be saved to the same directory as the backup.\n"\
-"		If this option is ommited no log file will be created.\n"\
+"  -l		Used to create a log file of the backup process. Log files will be saved to the same\n"\
+"		directory as the backup. If this option is ommited no log file will be created.\n"\
 "		Example: -l\n\n"\
 "  -h		Shows this help menu.\n\n"\
 "ADDITIONAL EXAMPLES:\n"\
 "	Options can be used in conjuction with each other to provide granular control.\n\n"\
 "	Example: -d /path/to/backup/directory -e ~/Music\n"\
-"	This example will will place backup file in the directory /path/to/backup/directory\n"\
-"	and exclude the directory ~/Music. Autodetection will be used to find the number\n"\
-"	of processing threads to use (or 2 processing threads will be used if autodetect\n"\
-"	is not supported) and no timestamp will be added.\n\n"\
+"	This example will will place backup file in the directory /path/to/backup/directory and exclude\n"\
+"	the directory ~/Music. Autodetection will be used to find the number of processing threads\n"\
+"	to use or two processing threads will be used if autodetect is not supported. No timestamp will\n"\
+"	be added in this example.\n\n"\
 "	Example: -e ~/Music -p 4 -t -l\n"\
-"	This example will place the backup and log files, named with a timestamp, in the users\n"\
-"	home directory as well as excluding the directory ~/Music while using four proccessing\n"\
-"	threads for compression."\ 
+"	This example will place the backup and log files, named with a timestamp, in the users home\n"\
+"	directory as well as excluding the directory ~/Music while using four proccessing threads for\n"\
+"	compression."\ 
 	exit 1
 }
 
@@ -149,7 +151,7 @@ do
         case "${option}"
         in
 		d) DestinationDir ${OPTARG};;
-		e) ExcludeDirs ${OPTARG};;
+		e) Exclude ${OPTARG};;
 		p) Procs ${OPTARG};;
 		t) Time;;
 		l) Logging;;
@@ -161,7 +163,7 @@ done
 # Change directory to root...
 pushd / 1>/dev/null
 
-# Check for a destination directory...
+# Checking for destination directory...
 if [ "$booDestUsed" = "0" ]; then
 	echo -e $labInfo"No target directory was specified using home directory " $strTargetDir
 	echo -e $labInfo"The backup file will be created at " $strTargetDir$strFileName
@@ -169,22 +171,22 @@ else
 	echo -e $labInfo"The backup file will be created at " $strTargetDir$strFileName
 fi
 
-# Check for excluded directories...
+# Checking for excluded directories or files...
 if [ "$booExcludeUsed" = "0" ]; then
 	echo -e $labInfo"No additional exclude directories were specified using defaults"
 fi
 
-# Check for processing thread limit
+# Checking for processing thread limit...
 if [ "$booThreadUsed" = "0" ]; then
 	echo -e $labInfo"No specific amount of processing threads were specified attempting to autodetect"
 fi
 
-# Check for time appending
+# Checking for time appending...
 if [ "$booTimeUsed" = "0" ]; then
 	echo -e $labInfo"No date time stamp will be added to the filenames."
 fi
 
-# Check for logging...
+# Checking for logging...
 if [ "$booLogUsed" = "0" ]; then
 	echo -e $labInfo"No log file will be created"
 else
