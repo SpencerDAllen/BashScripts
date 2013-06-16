@@ -36,7 +36,7 @@ DestinationDir () {
 	if [ -d $1 ]; then
 		booDestUsed=1
 		strTargetDir=$1
-		if [ $strTargetDir == "*/" ]; then
+		if [ $strTargetDir != "*/" ]; then
 			strTargetDir=$strTargetDir"/"
 		fi
 		echo -e $labInfo"The target directory is " $strTargetDir
