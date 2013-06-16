@@ -15,9 +15,8 @@ colDefault="\033[0m"
 strDefaultExclude="--exclude=./proc --exclude=./tmp --exclude=./mnt --exclude=./media --exclude=./dev --exclude=./sys"
 strTargetDir=$(getent passwd $SUDO_USER | cut -d: -f6)"/"
 strLogDest="/dev/null "
-strHostName=$(hostname)
-strFileName="$strHostName.tar.bz2"
-strLogName="$strHostName-Backup.log"
+strFileName="$(hostname).tar.bz2"
+strLogName="$(hostname)-Backup.log"
 
 # Boolean
 booDestUsed=0
