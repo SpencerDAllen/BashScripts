@@ -114,8 +114,8 @@ Help () {
 "		If this option is ommited the autodetected # of processors will be used.\n"\
 "		(or 2 processing threads will be used if autodetect is not supported).\n"\
 "		Example: -p 4\n\n"\
-"  -t		Used to append a date timestamp to the beginning of all files names.\n"\
-"		The date timestamp will appear as YYYY-MM-DD_HH:MM.\n"\
+"  -t		Used to append a timestamp to the beginning of all files names.\n"\
+"		The timestamp will appear as YYYY-MM-DD_HH:MM.\n"\
 "		If this option is ommited no date timestamp will be added.\n"\
 "		Example -t\n\n"\
 "  -l		Used to create a log file of the backup process.\n"\
