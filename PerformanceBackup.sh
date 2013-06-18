@@ -6,10 +6,10 @@
 
 #### Declare variables
 # Color strings
-colRed="\E[31m"
-colGreen="\E[32m"
-colYellow="\E[33m"
-colDefault="\033[0m"
+strRed="\E[31m"
+strGreen="\E[32m"
+strYellow="\E[33m"
+strDefault="\033[0m"
 
 # Strings
 strDefaultExclude="--exclude=./proc --exclude=./tmp --exclude=./mnt --exclude=./media --exclude=./dev --exclude=./sys"
@@ -19,72 +19,72 @@ strFileName="$(hostname).tar.bz2"
 strLogName="$(hostname)-Backup.log"
 
 # Boolean
-booDestUsed=0
-booExcludeUsed=0
-booThreadUsed=0
-booTimeUsed=0
-booLogUsed=0
+fDestUsed=0
+fExcludeUsed=0
+fThreadUsed=0
+fTimeUsed=0
+fLogUsed=0
 
 # Label strings
-labInfo="$colGreen [INFO] $colDefault"
-labWarn="$colYellow [WARNING] $colDefault"
-labError="$colRed [ERROR] $colDefault"
+strInfoLabel="$strGreen [INFO] $strDefault"
+strWarnLabel="$strYellow [WARNING] $strDefault"
+strErrorLabel="$strRed [ERROR] $strDefault"
 
 #### Add functions
-DestinationDir () {
+fnDestinationDir () {
 	if [ -d $1 ]; then
-		booDestUsed=1
+		fDestUsed=1
 		strTargetDir=$1
 		if [[ $strTargetDir != *"/" ]]; then
 			strTargetDir=$strTargetDir"/"
 		fi
-		echo -e $labInfo"The target directory is " $strTargetDir
+		echo -e $strInfoLabel"The target directory is " $strTargetDir
 	else
-		echo -e $labError"The directory $1 does not exits using home directory"
+		echo -e $strErrorLabel"The directory $1 does not exits using home directory"
 	fi
 }
 
-Exclude () {
+fnExclude () {
 	if [[ "$1" != /* ]]; then
-		echo -e $labWarn $1" is not an absolute path and cannot be excluded."
+		echo -e $strWarnLabel $1" is not an absolute path and cannot be excluded."
 	else
 		if [ -d $1 ]; then
-			booExcludeUsed=1
+			fExcludeUsed=1
 			strUserExclude=$strUserExclude"--exclude=.$1 "
-			echo -e $labInfo"Excluding directory " $1
+			echo -e $strInfoLabel"Excluding directory " $1
 		elif [ -f $1 ]; then
-			booExcludeUsed=1
+			fExcludeUsed=1
 			strUserExclude=$strUserExclude"--exclude=.$1 "
-			echo -e $labInfo"Excluding file " $1
+			echo -e $strInfoLabel"Excluding file " $1
 		else
-			echo -e $labWarn $1" cannot be excluded because it does not exist"
+			echo -e $strWarnLabel $1" cannot be excluded because it does not exist"
 		fi
 	fi
 }
 
-Procs () {
+fnProcs () {
 	if [ "$1" -eq "$1" 2>/dev/null ]; then
-		booThreadUsed=1
+		fThreadUsed=1
 		strThreads=" -p"$1" "
-		echo -e $labInfo"Using the specified $1 processing threads"
+		echo -e $strInfoLabel"Using the specified $1 processing threads"
 	else
-		echo -e $labError"Invalid input, thread entry must be an interger"
+		echo -e $strErrorLabel"Invalid input, thread entry must be an interger"
 	fi
 }
 
-Time () {
-	booTimeUsed=1
+fnTime () {
+	fTimeUsed=1
 	strFileName="$(date +%Y-%m-%d_%H:%M)-$(hostname).tar.bz2"
 	strLogName="$(date +%Y-%m-%d_%H:%M)-$(hostname)-Backup.log"
 }
 
-Logging () {
-	booLogUsed=1
+fnLogging () {
+	fLogUsed=1
 	strLogDest="$strTargetDir$strLogName"
 	strUserExclude=$strUserExclude"--exclude=.$strLogDest "
 }
 
-Help () {
+fnHelp () {
 	echo -e \
 "NAME:\n"\
 "	Performance backup - a high performance backup script.\n\n"\
@@ -94,7 +94,7 @@ Help () {
 "	Quickly creates a highly compressed tar backup of your entire system while providing\n"\
 "	a progress bar for monitoring. For conveniance and to avoid errors certain root\n"\
 "	directories are excluded from the backup by default. These directories must be recreated\n"\
-"	when restoring from the backup. The default excluded directories are /proc /tmp /mnt/media\n"\
+"	when restoring from the backup. The default excluded directories are /proc /tmp /mnt /media\n"\
 "	/dev and /sys. Backup and log files will be named HOSTNAME.tar.bz2 and HOSTNAME-Backup.log\n"\
 "	respectivly.\n\n"\
 "PREREQUISITES:\n"\
@@ -105,24 +105,25 @@ Help () {
 "		be local or remote. If this option is ommited the users home directory will be used.\n"\
 "                Example: -d /backup/directory\n\n"\
 "  -e		Used to exclude additional files or directories. The use of multiple exclude paths is\n"\
-"		permissable. If this option is ommited only the default directories are ommited.\n\n"\
+"		permissable. If this option is ommited only the default directories are ommited. Relitive\n"\
+"		paths can't be excluded, provide absolute paths instead.\n\n"\
 "		Example: -e /exclude\n"\
 "		Excludes the /exclude directory\n\n"\
 "		Example: -e /path/exclude.file\n"\
 "		Excludes the exclude.file file in the /path directory.\n\n"\
 "		Example: -e /first/exclude -e /second/exclude\n"\
 "		Excludes both specified directories.\n\n"\
-"  -p		Used to specify the number of processing threads used for compression. If this option is\n"\
+"  -p		Used to specify the number of processing threads to use for compression. If this option is\n"\
 "		ommited the autodetected number of processors will be used or two processing threads\n"\
 "		will be used if autodetect is not supported.\n"\
 "		Example: -p 4\n\n"\
 "  -t		Used to append a timestamp to the beginning of all files names. The timestamp will\n"\
-"		appear as YYYY-MM-DD_HH:MM. If this option is ommited no date timestamp will be added.\n"\
+"		appear as YYYY-MM-DD_HH:MM. If this option is ommited no timestamp will be added.\n"\
 "		Example -t\n\n"\
 "  -l		Used to create a log file of the backup process. Log files will be saved to the same\n"\
 "		directory as the backup. If this option is ommited no log file will be created.\n"\
 "		Example: -l\n\n"\
-"  -h		Shows this help menu.\n\n"\
+"  -h		Shows this Help menu.\n\n"\
 "ADDITIONAL EXAMPLES:\n"\
 "	Options can be used in conjuction with each other to provide granular control.\n\n"\
 "	Example: -d /path/to/backup/directory -e ~/Music\n"\
@@ -139,24 +140,24 @@ Help () {
 
 # Check for requirments.
 if [ $EUID -ne 0 ]; then
-	echo -e $labError"Only root can do that. Aborting."
-	Help
+	echo -e $strErrorLabel"Only root can do that. Aborting."
+	fnHelp
 fi
-hash pv 2>/dev/null || { echo -e $labError"I require pv but it's not installed.  Aborting."; Help; }
-hash pbzip2 2>/dev/null || { echo -e $labError"I require pbzip2 but it's not installed.  Aborting."; Help; }
+hash pv 2>/dev/null || { echo -e $strErrorLabel"I require pv but it's not installed.  Aborting."; fnHelp; }
+hash pbzip2 2>/dev/null || { echo -e $strErrorLabel"I require pbzip2 but it's not installed.  Aborting."; fnHelp; }
 
 #### Process arguments
 while getopts d:e:p:tlh option
 do
         case "${option}"
         in
-		d) DestinationDir ${OPTARG};;
-		e) Exclude ${OPTARG};;
-		p) Procs ${OPTARG};;
-		t) Time;;
-		l) Logging;;
-		h) Help;;
-		\?) Help;;
+		d) fnDestinationDir ${OPTARG};;
+		e) fnExclude ${OPTARG};;
+		p) fnProcs ${OPTARG};;
+		t) fnTime;;
+		l) fnLogging;;
+		h) fnHelp;;
+		\?) fnHelp;;
 	esac
 done
 
@@ -164,33 +165,33 @@ done
 pushd / 1>/dev/null
 
 # Checking for destination directory...
-if [ "$booDestUsed" = "0" ]; then
-	echo -e $labInfo"No target directory was specified using home directory " $strTargetDir
-	echo -e $labInfo"The backup file will be created at " $strTargetDir$strFileName
+if [ "$fDestUsed" = "0" ]; then
+	echo -e $strInfoLabel"No target directory was specified using home directory " $strTargetDir
+	echo -e $strInfoLabel"The backup file will be created at " $strTargetDir$strFileName
 else
-	echo -e $labInfo"The backup file will be created at " $strTargetDir$strFileName
+	echo -e $strInfoLabel"The backup file will be created at " $strTargetDir$strFileName
 fi
 
 # Checking for excluded directories or files...
-if [ "$booExcludeUsed" = "0" ]; then
-	echo -e $labInfo"No additional exclude directories were specified using defaults"
+if [ "$fExcludeUsed" = "0" ]; then
+	echo -e $strInfoLabel"No additional exclude directories were specified using defaults"
 fi
 
 # Checking for processing thread limit...
-if [ "$booThreadUsed" = "0" ]; then
-	echo -e $labInfo"No specific amount of processing threads were specified attempting to autodetect"
+if [ "$fThreadUsed" = "0" ]; then
+	echo -e $strInfoLabel"No specific amount of processing threads were specified attempting to autodetect"
 fi
 
 # Checking for time appending...
-if [ "$booTimeUsed" = "0" ]; then
-	echo -e $labInfo"No date time stamp will be added to the filenames."
+if [ "$fTimeUsed" = "0" ]; then
+	echo -e $strInfoLabel"No date time stamp will be added to the filenames."
 fi
 
 # Checking for logging...
-if [ "$booLogUsed" = "0" ]; then
-	echo -e $labInfo"No log file will be created"
+if [ "$fLogUsed" = "0" ]; then
+	echo -e $strInfoLabel"No log file will be created"
 else
-	echo -e $labInfo"A log file will be created at "$strLogDest
+	echo -e $strInfoLabel"A log file will be created at "$strLogDest
 	echo -e "The backup was created with the following tar command" > $strLogDest
 	echo -e "It is included here for use as a reference when rebuilding from your backup" >> $strLogDest
 	echo -e "tar -cjpf --exclude=.$strTargetDir$strFileName $strDefaultExclude $strUserExclude" >> $strLogDest
@@ -200,5 +201,5 @@ fi
 # We're ready to run our command...
 tar -cvpf - --exclude=.$strTargetDir$strFileName $strDefaultExclude $strUserExclude. 2>>$strLogDest | pv -s $(du -sb --exclude=.$strTargetDir$strFileName $strDefaultExclude $strUserExclude. 2>>/dev/null | awk '{print $1}') | pbzip2 -cf$strThreads> $strTargetDir$strFileName
 
-echo -e $labInfo"Script Finished!"
+echo -e $strInfoLabel"Script Finished!"
 exit 0
