@@ -184,7 +184,7 @@ fi
 
 # Checking for time appending...
 if [ "$fTimeUsed" = "0" ]; then
-	echo -e $strInfoLabel"No date time stamp will be added to the filenames."
+	echo -e $strInfoLabel"No timestamp will be added to the filenames."
 fi
 
 # Checking for logging...
