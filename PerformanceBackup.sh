@@ -12,7 +12,7 @@ strYellow="\E[33m"
 strDefault="\033[0m"
 
 # Strings
-strDefaultExclude="--exclude=./proc --exclude=./tmp --exclude=./mnt --exclude=./media --exclude=./dev --exclude=./sys"
+strExclude="--exclude=./proc --exclude=./tmp --exclude=./mnt --exclude=./media --exclude=./dev --exclude=./sys "
 strTargetDir=$(getent passwd $SUDO_USER | cut -d: -f6)"/"
 strLogDest="/dev/null "
 strFileName="$(hostname).tar.bz2"
@@ -81,7 +81,6 @@ fnTime () {
 fnLogging () {
 	fLogUsed=1
 	strLogDest="$strTargetDir$strLogName"
-	strUserExclude=$strUserExclude"--exclude=.$strLogDest "
 }
 
 fnHelp () {
@@ -93,10 +92,9 @@ fnHelp () {
 "DESCRIPTION:\n"\
 "	Quickly creates a highly compressed tar backup of your entire system while providing\n"\
 "	a progress bar for monitoring. For conveniance and to avoid errors certain root\n"\
-"	directories are excluded from the backup by default. These directories must be recreated\n"\
-"	when restoring from the backup. The default excluded directories are /proc /tmp /mnt /media\n"\
-"	/dev and /sys. Backup and log files will be named HOSTNAME.tar.bz2 and HOSTNAME-Backup.log\n"\
-"	respectivly.\n\n"\
+"	directories are excluded from the backup by default and must be recreated when restoring\n"\
+"	from the backup. They are as follows /proc /tmp /mnt /media /dev and /sys. Backup and log\n"\
+"	files will be named HOSTNAME.tar.bz2 and HOSTNAME-Backup.log.\n\n"\
 "PREREQUISITES:\n"\
 "	This script must run as root and it requires the use of PV and PBZIP2 to complete it's tasks.\n"\
 "	Please install them prior to running this script.\n\n"\
@@ -140,8 +138,7 @@ fnHelp () {
 
 # Check for requirments.
 if [ $EUID -ne 0 ]; then
-	echo -e $strErrorLabel"Only root can do that. Aborting."
-	fnHelp
+	echo -e $strErrorLabel"Only root can do that. Aborting."; fnHelp;
 fi
 hash pv 2>/dev/null || { echo -e $strErrorLabel"I require pv but it's not installed.  Aborting."; fnHelp; }
 hash pbzip2 2>/dev/null || { echo -e $strErrorLabel"I require pbzip2 but it's not installed.  Aborting."; fnHelp; }
@@ -187,19 +184,24 @@ if [ "$fTimeUsed" = "0" ]; then
 	echo -e $strInfoLabel"No timestamp will be added to the filenames."
 fi
 
+# Exclude backup file to prevent circular compression...
+strExclude=$strExclude"--exclude=.$strTargetDir$strFileName "
+
 # Checking for logging...
 if [ "$fLogUsed" = "0" ]; then
 	echo -e $strInfoLabel"No log file will be created"
 else
 	echo -e $strInfoLabel"A log file will be created at "$strLogDest
-	echo -e "The backup was created with the following tar command" > $strLogDest
-	echo -e "It is included here for use as a reference when rebuilding from your backup" >> $strLogDest
-	echo -e "tar -cjpf --exclude=.$strTargetDir$strFileName $strDefaultExclude $strUserExclude" >> $strLogDest
+	# Exclude log file to prevent circular compression...
+	strExclude=$strExclude"--exclude=.$strLogDest "
+	# Begin writing to log file...
+	echo -e "The backup file does not contain the following files or directories" > $strLogDest
+	echo -e $strExclude$strUserExclude | sed -E 's/--.{9}//g' >> $strLogDest
 	echo -e "Below is a list of everything that was included in your backup" >> $strLogDest
 fi
 
 # We're ready to run our command...
-tar -cvpf - --exclude=.$strTargetDir$strFileName $strDefaultExclude $strUserExclude. 2>>$strLogDest | pv -s $(du -sb --exclude=.$strTargetDir$strFileName $strDefaultExclude $strUserExclude. 2>>/dev/null | awk '{print $1}') | pbzip2 -cf$strThreads> $strTargetDir$strFileName
+tar -cvpf - $strExclude$strUserExclude. 2>>$strLogDest | pv -s $(du -sb $strExclude$strUserExclude. 2>>/dev/null | awk '{print $1}') | pbzip2 -cf$strThreads> $strTargetDir$strFileName
 
 echo -e $strInfoLabel"Script Finished!"
 exit 0
