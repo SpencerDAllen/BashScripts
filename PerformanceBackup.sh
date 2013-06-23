@@ -30,6 +30,9 @@ strInfoLabel="$strGreen [INFO] $strDefault"
 strWarnLabel="$strYellow [WARNING] $strDefault"
 strErrorLabel="$strRed [ERROR] $strDefault"
 
+# intergers
+iPositive='^[0-9]+$'
+
 #### Add functions
 fnDestinationDir () {
 	if [ -d $1 ]; then
@@ -63,7 +66,7 @@ fnExclude () {
 }
 
 fnProcs () {
-	if [ "$1" -eq "$1" 2>/dev/null ]; then
+	if [[ $1 =~ $iPositive ]]; then
 		fThreadUsed=1
 		strThreads=" -p"$1" "
 		echo -e $strInfoLabel"Using the specified $1 processing threads"
@@ -196,7 +199,7 @@ else
 	strExclude=$strExclude"--exclude=.$strLogDest "
 	# Begin writing to log file...
 	echo -e "The backup file does not contain the following files or directories" > $strLogDest
-	echo -e $strExclude$strUserExclude | sed -E 's/--.{9}//g' >> $strLogDest
+	echo -e $strExclude$strUserExclude | sed -E 's/--.{8}\.//g' >> $strLogDest
 	echo -e "Below is a list of everything that was included in your backup" >> $strLogDest
 fi
 
