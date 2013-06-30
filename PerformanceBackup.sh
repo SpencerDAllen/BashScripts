@@ -6,9 +6,9 @@
 
 #### Declare variables
 # Color strings
-strRed="\E[31m"
 strGreen="\E[32m"
 strYellow="\E[33m"
+strRed="\E[31m"
 strDefault="\033[0m"
 
 # Label strings
