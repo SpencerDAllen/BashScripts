@@ -31,7 +31,7 @@ fTimeUsed=0
 fLogUsed=0
 
 # RegEx
-iPositiveEx='^[0-9]+$'
+iPositiveRE='^[0-9]+$'
 
 #### Add functions
 fnDestinationDir () {
@@ -70,7 +70,7 @@ fnExclude () {
 }
 
 fnProcs () {
-	if [[ $1 =~ $iPositiveEx ]]; then
+	if [[ $1 =~ $iPositiveRE ]]; then
 		fThreadUsed=1
 		strThreads=" -p"$1" "
 		echo -e $strInfoLabel"Using the specified $1 processing threads"
