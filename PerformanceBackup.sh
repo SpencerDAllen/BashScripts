@@ -11,7 +11,12 @@ strGreen="\E[32m"
 strYellow="\E[33m"
 strDefault="\033[0m"
 
-# Strings
+# Label strings
+strInfoLabel="$strGreen [INFO] $strDefault"
+strWarnLabel="$strYellow [WARNING] $strDefault"
+strErrorLabel="$strRed [ERROR] $strDefault"
+
+# Normal Strings
 strExclude="--exclude=./proc --exclude=./tmp --exclude=./mnt --exclude=./media --exclude=./dev --exclude=./sys "
 strTargetDir=$(getent passwd $SUDO_USER | cut -d: -f6)"/"
 strLogDest="/dev/null "
@@ -25,31 +30,30 @@ fThreadUsed=0
 fTimeUsed=0
 fLogUsed=0
 
-# Label strings
-strInfoLabel="$strGreen [INFO] $strDefault"
-strWarnLabel="$strYellow [WARNING] $strDefault"
-strErrorLabel="$strRed [ERROR] $strDefault"
-
-# intergers
-iPositive='^[0-9]+$'
+# RegEx
+iPositiveEx='^[0-9]+$'
 
 #### Add functions
 fnDestinationDir () {
-	if [ -d $1 ]; then
-		fDestUsed=1
-		strTargetDir=$1
-		if [[ $strTargetDir != *"/" ]]; then
-			strTargetDir=$strTargetDir"/"
+	if [ "$fDestUsed" = "0" ]; then
+		if [ -d $1 ]; then
+			fDestUsed=1
+			strTargetDir=$1
+			if [[ $strTargetDir != *"/" ]]; then
+				strTargetDir=$strTargetDir"/"
+			fi
+			echo -e $strInfoLabel"The destination directory is " $strTargetDir
+		else
+			echo -e $strErrorLabel"The directory $1 does not exits using home directory"
 		fi
-		echo -e $strInfoLabel"The target directory is " $strTargetDir
 	else
-		echo -e $strErrorLabel"The directory $1 does not exits using home directory"
+		echo -e $strWarnLabel"Sorry, only one destination directory can be used"
 	fi
 }
 
 fnExclude () {
 	if [[ "$1" != /* ]]; then
-		echo -e $strWarnLabel $1" is not an absolute path and cannot be excluded."
+		echo -e $strWarnLabel$1" is not an absolute path and cannot be excluded."
 	else
 		if [ -d $1 ]; then
 			fExcludeUsed=1
@@ -60,18 +64,18 @@ fnExclude () {
 			strUserExclude=$strUserExclude"--exclude=.$1 "
 			echo -e $strInfoLabel"Excluding file " $1
 		else
-			echo -e $strWarnLabel $1" cannot be excluded because it does not exist"
+			echo -e $strWarnLabel$1" cannot be excluded because it does not exist"
 		fi
 	fi
 }
 
 fnProcs () {
-	if [[ $1 =~ $iPositive ]]; then
+	if [[ $1 =~ $iPositiveEx ]]; then
 		fThreadUsed=1
 		strThreads=" -p"$1" "
 		echo -e $strInfoLabel"Using the specified $1 processing threads"
 	else
-		echo -e $strErrorLabel"Invalid input, thread entry must be an interger"
+		echo -e $strWarnLabel"Invalid input, thread entry must be an interger"
 	fi
 }
 
@@ -166,7 +170,7 @@ pushd / 1>/dev/null
 
 # Checking for destination directory...
 if [ "$fDestUsed" = "0" ]; then
-	echo -e $strInfoLabel"No target directory was specified using home directory " $strTargetDir
+	echo -e $strInfoLabel"No destination directory was specified using home directory " $strTargetDir
 	echo -e $strInfoLabel"The backup file will be created at " $strTargetDir$strFileName
 else
 	echo -e $strInfoLabel"The backup file will be created at " $strTargetDir$strFileName
@@ -184,7 +188,7 @@ fi
 
 # Checking for time appending...
 if [ "$fTimeUsed" = "0" ]; then
-	echo -e $strInfoLabel"No timestamp will be added to the filenames."
+	echo -e $strInfoLabel"No timestamp will be added to the filenames"
 fi
 
 # Exclude backup file to prevent circular compression...
