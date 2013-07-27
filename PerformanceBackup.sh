@@ -23,7 +23,7 @@ strLogDest="/dev/null "
 strFileName="$(hostname).tar.bz2"
 strLogName="$(hostname)-Backup.log"
 
-# Boolean
+# Boolean flags
 fDestUsed=0
 fExcludeUsed=0
 fThreadUsed=0
@@ -44,7 +44,7 @@ fnDestinationDir () {
 			fi
 			echo -e $strInfoLabel"The destination directory is " $strTargetDir
 		else
-			echo -e $strErrorLabel"The directory $1 does not exits using home directory"
+			echo -e $strWarnLabel"The directory $1 does not exits using home directory"
 		fi
 	else
 		echo -e $strWarnLabel"Sorry, only one destination directory can be used"
@@ -143,7 +143,7 @@ fnHelp () {
 	exit 1
 }
 
-# Check for requirments.
+#### Check for requirments.
 if [ $EUID -ne 0 ]; then
 	echo -e $strErrorLabel"Only root can do that. Aborting."; fnHelp;
 fi
