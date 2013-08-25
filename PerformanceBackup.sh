@@ -198,10 +198,10 @@ fi
 if [ "$fLogUsed" = "0" ]; then
 	$strInfoLabel"No log file will be created"
 else
-	$strInfoLabel"A log file will be created at "$strLogDest
 	# Exclude log file to prevent circular compression...
 	strExclude=$strExclude"--exclude=.$strLogDest "
 	# Begin writing to log file...
+	$strInfoLabel"A log file will be created at "$strLogDest
 	echo -e "The backup file does not contain the following files or directories" > $strLogDest
 	echo -e $strExclude$strUserExclude | sed -E 's/--.{8}\.//g' >> $strLogDest
 	echo -e "Below is a list of everything that was included in your backup" >> $strLogDest
