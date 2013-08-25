@@ -91,7 +91,8 @@ fnLogging () {
 }
 
 fnHelp () {
-	echo -e\ "NAME:\n"\
+	echo -e\
+"NAME:\n"\
 "	Performance backup - a high performance backup script.\n\n"\
 "SYNOPSIS:\n"\
 "	PerformanceBackup.sh -d [options] -e [options] -p [options] -t -l -h\n\n"\
