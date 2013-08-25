@@ -12,9 +12,9 @@ strRed="\E[31m"
 strDefault="\033[0m"
 
 # Label strings
-strInfoLabel="$strGreen [INFO] $strDefault"
-strWarnLabel="$strYellow [WARNING] $strDefault"
-strErrorLabel="$strRed [ERROR] $strDefault"
+strInfoLabel="echo -e $strGreen [INFO] $strDefault"
+strWarnLabel="echo -e $strYellow [WARNING] $strDefault"
+strErrorLabel="echo -e $strRed [ERROR] $strDefault"
 
 # Normal Strings
 strExclude="--exclude=./proc --exclude=./tmp --exclude=./mnt --exclude=./media --exclude=./dev --exclude=./sys "
@@ -42,29 +42,29 @@ fnDestinationDir () {
 			if [[ $strTargetDir != *"/" ]]; then
 				strTargetDir=$strTargetDir"/"
 			fi
-			echo -e $strInfoLabel"The destination directory is " $strTargetDir
+			$strInfoLabel"The destination directory is " $strTargetDir
 		else
-			echo -e $strWarnLabel"The directory $1 does not exits using home directory"
+			$strWarnLabel"The directory $1 does not exits using home directory"
 		fi
 	else
-		echo -e $strWarnLabel"Sorry, only one destination directory can be used"
+		$strWarnLabel"Sorry, only one destination directory can be used"
 	fi
 }
 
 fnExclude () {
 	if [[ "$1" != /* ]]; then
-		echo -e $strWarnLabel$1" is not an absolute path and cannot be excluded."
+		$strWarnLabel$1" is not an absolute path and cannot be excluded."
 	else
 		if [ -d $1 ]; then
 			fExcludeUsed=1
 			strUserExclude=$strUserExclude"--exclude=.$1 "
-			echo -e $strInfoLabel"Excluding directory " $1
+			$strInfoLabel"Excluding directory " $1
 		elif [ -f $1 ]; then
 			fExcludeUsed=1
 			strUserExclude=$strUserExclude"--exclude=.$1 "
-			echo -e $strInfoLabel"Excluding file " $1
+			$strInfoLabel"Excluding file " $1
 		else
-			echo -e $strWarnLabel$1" cannot be excluded because it does not exist"
+			$strWarnLabel$1" cannot be excluded because it does not exist"
 		fi
 	fi
 }
@@ -73,9 +73,9 @@ fnProcs () {
 	if [[ $1 =~ $iPositiveRE ]]; then
 		fThreadUsed=1
 		strThreads=" -p"$1" "
-		echo -e $strInfoLabel"Using the specified $1 processing threads"
+		$strInfoLabel"Using the specified $1 processing threads"
 	else
-		echo -e $strWarnLabel"Invalid input, thread entry must be an interger"
+		$strWarnLabel"Invalid input, thread entry must be an interger"
 	fi
 }
 
@@ -91,8 +91,7 @@ fnLogging () {
 }
 
 fnHelp () {
-	echo -e \
-"NAME:\n"\
+	echo -e\ "NAME:\n"\
 "	Performance backup - a high performance backup script.\n\n"\
 "SYNOPSIS:\n"\
 "	PerformanceBackup.sh -d [options] -e [options] -p [options] -t -l -h\n\n"\
@@ -145,10 +144,10 @@ fnHelp () {
 
 #### Check for requirments.
 if [ $EUID -ne 0 ]; then
-	echo -e $strErrorLabel"Only root can do that. Aborting."; fnHelp;
+	$strErrorLabel"Only root can do that. Aborting."; fnHelp;
 fi
-hash pv 2>/dev/null || { echo -e $strErrorLabel"I require pv but it's not installed.  Aborting."; fnHelp; }
-hash pbzip2 2>/dev/null || { echo -e $strErrorLabel"I require pbzip2 but it's not installed.  Aborting."; fnHelp; }
+hash pv 2>/dev/null || { $strErrorLabel"I require pv but it's not installed.  Aborting."; fnHelp; }
+hash pbzip2 2>/dev/null || { $strErrorLabel"I require pbzip2 but it's not installed.  Aborting."; fnHelp; }
 
 #### Process arguments
 while getopts d:e:p:tlh option
@@ -168,37 +167,37 @@ done
 # Change directory to root...
 pushd / 1>/dev/null
 
+# Exclude backup file to prevent circular compression...
+strExclude=$strExclude"--exclude=.$strTargetDir$strFileName "
+
 # Checking for destination directory...
 if [ "$fDestUsed" = "0" ]; then
-	echo -e $strInfoLabel"No destination directory was specified using home directory " $strTargetDir
-	echo -e $strInfoLabel"The backup file will be created at " $strTargetDir$strFileName
+	$strInfoLabel"No destination directory was specified using home directory " $strTargetDir
+	$strInfoLabel"The backup file will be created at " $strTargetDir$strFileName
 else
-	echo -e $strInfoLabel"The backup file will be created at " $strTargetDir$strFileName
+	$strInfoLabel"The backup file will be created at " $strTargetDir$strFileName
 fi
 
 # Checking for excluded directories or files...
 if [ "$fExcludeUsed" = "0" ]; then
-	echo -e $strInfoLabel"No additional exclude directories were specified using defaults"
+	$strInfoLabel"No additional exclude directories were specified using defaults"
 fi
 
 # Checking for processing thread limit...
 if [ "$fThreadUsed" = "0" ]; then
-	echo -e $strInfoLabel"No specific amount of processing threads were specified attempting to autodetect"
+	$strInfoLabel"No specific amount of processing threads were specified attempting to autodetect"
 fi
 
 # Checking for time appending...
 if [ "$fTimeUsed" = "0" ]; then
-	echo -e $strInfoLabel"No timestamp will be added to the filenames"
+	$strInfoLabel"No timestamp will be added to the filenames"
 fi
-
-# Exclude backup file to prevent circular compression...
-strExclude=$strExclude"--exclude=.$strTargetDir$strFileName "
 
 # Checking for logging...
 if [ "$fLogUsed" = "0" ]; then
-	echo -e $strInfoLabel"No log file will be created"
+	$strInfoLabel"No log file will be created"
 else
-	echo -e $strInfoLabel"A log file will be created at "$strLogDest
+	$strInfoLabel"A log file will be created at "$strLogDest
 	# Exclude log file to prevent circular compression...
 	strExclude=$strExclude"--exclude=.$strLogDest "
 	# Begin writing to log file...
@@ -210,5 +209,5 @@ fi
 # We're ready to run our command...
 tar -cvpf - $strExclude$strUserExclude. 2>>$strLogDest | pv -s $(du -sb $strExclude$strUserExclude. 2>>/dev/null | awk '{print $1}') | pbzip2 -cf$strThreads> $strTargetDir$strFileName
 
-echo -e $strInfoLabel"Script Finished!"
+$strInfoLabel"Script Finished!"
 exit 0
