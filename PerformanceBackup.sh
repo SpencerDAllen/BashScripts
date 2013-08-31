@@ -1,7 +1,8 @@
 #!/bin/bash
 
+# © Copyright
 # Spencer Allen
-# June 1st 2013
+# 2013
 # Performance backup
 
 #### Declare variables
