@@ -39,9 +39,7 @@ fnDestinationDir () {
 		if [ -d $1 ]; then
 			fDestUsed=1
 			strTargetDir=$1
-			if [[ $strTargetDir != *"/" ]]; then
-				strTargetDir=$strTargetDir"/"
-			fi
+			if [[ $strTargetDir != *"/" ]]; then strTargetDir=$strTargetDir"/"; fi
 			$strInfoLabel"The destination directory is " $strTargetDir
 		else
 			$strWarnLabel"The directory $1 does not exits using home directory"
@@ -91,7 +89,7 @@ fnLogging () {
 }
 
 fnHelp () {
-	echo -e\
+        echo -e \
 "NAME:\n"\
 "	Performance backup - a high performance backup script.\n\n"\
 "SYNOPSIS:\n"\
@@ -144,9 +142,7 @@ fnHelp () {
 }
 
 #### Check for requirments.
-if [ $EUID -ne 0 ]; then
-	$strErrorLabel"Only root can do that. Aborting."; fnHelp;
-fi
+if [ $EUID -ne 0 ]; then $strErrorLabel"Only root can do that. Aborting."; fnHelp; fi
 hash pv 2>/dev/null || { $strErrorLabel"I require pv but it's not installed.  Aborting."; fnHelp; }
 hash pbzip2 2>/dev/null || { $strErrorLabel"I require pbzip2 but it's not installed.  Aborting."; fnHelp; }
 
@@ -180,19 +176,13 @@ else
 fi
 
 # Checking for excluded directories or files...
-if [ "$fExcludeUsed" = "0" ]; then
-	$strInfoLabel"No additional exclude directories were specified using defaults"
-fi
+if [ "$fExcludeUsed" = "0" ]; then $strInfoLabel"No additional exclude directories were specified using defaults"; fi
 
 # Checking for processing thread limit...
-if [ "$fThreadUsed" = "0" ]; then
-	$strInfoLabel"No specific amount of processing threads were specified attempting to autodetect"
-fi
+if [ "$fThreadUsed" = "0" ]; then $strInfoLabel"No specific amount of processing threads were specified attempting to autodetect"; fi
 
 # Checking for time appending...
-if [ "$fTimeUsed" = "0" ]; then
-	$strInfoLabel"No timestamp will be added to the filenames"
-fi
+if [ "$fTimeUsed" = "0" ]; then $strInfoLabel"No timestamp will be added to the filenames"; fi
 
 # Checking for logging...
 if [ "$fLogUsed" = "0" ]; then
