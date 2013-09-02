@@ -25,20 +25,20 @@ strFileName="$(hostname).tar.bz2"
 strLogName="$(hostname)-Backup.log"
 
 # Boolean flags
-fDestUsed=0
-fExcludeUsed=0
-fThreadUsed=0
-fTimeUsed=0
-fLogUsed=0
+fDestUsed=true
+fExcludeUsed=true
+fThreadUsed=true
+fTimeUsed=true
+fLogUsed=true
 
 # RegEx
 iPositiveRE='^[0-9]+$'
 
 #### Add functions
 fnDestinationDir () {
-	if [ "$fDestUsed" = "0" ]; then
+	if $fDestUsed; then
 		if [ -d $1 ]; then
-			fDestUsed=1
+			fDestUsed=false
 			strTargetDir=$1
 			if [[ $strTargetDir != *"/" ]]; then strTargetDir=$strTargetDir"/"; fi
 			$strInfoLabel"The destination directory is " $strTargetDir
@@ -55,11 +55,11 @@ fnExclude () {
 		$strWarnLabel$1" is not an absolute path and cannot be excluded."
 	else
 		if [ -d $1 ]; then
-			fExcludeUsed=1
+			fExcludeUsed=false
 			strUserExclude=$strUserExclude"--exclude=.$1 "
 			$strInfoLabel"Excluding directory " $1
 		elif [ -f $1 ]; then
-			fExcludeUsed=1
+			fExcludeUsed=false
 			strUserExclude=$strUserExclude"--exclude=.$1 "
 			$strInfoLabel"Excluding file " $1
 		else
@@ -70,7 +70,7 @@ fnExclude () {
 
 fnProcs () {
 	if [[ $1 =~ $iPositiveRE ]]; then
-		fThreadUsed=1
+		fThreadUsed=false
 		strThreads=" -p"$1" "
 		$strInfoLabel"Using the specified $1 processing threads"
 	else
@@ -79,13 +79,13 @@ fnProcs () {
 }
 
 fnTime () {
-	fTimeUsed=1
+	fTimeUsed=false
 	strFileName="$(date +%Y-%m-%d_%H:%M)-$(hostname).tar.bz2"
 	strLogName="$(date +%Y-%m-%d_%H:%M)-$(hostname)-Backup.log"
 }
 
 fnLogging () {
-	fLogUsed=1
+	fLogUsed=false
 	strLogDest="$strTargetDir$strLogName"
 }
 
@@ -169,7 +169,7 @@ pushd / 1>/dev/null
 strExclude=$strExclude"--exclude=.$strTargetDir$strFileName "
 
 # Checking for destination directory...
-if [ "$fDestUsed" = "0" ]; then
+if $fDestUsed; then
 	$strInfoLabel"No destination directory was specified using home directory " $strTargetDir
 	$strInfoLabel"The backup file will be created at " $strTargetDir$strFileName
 else
@@ -177,16 +177,16 @@ else
 fi
 
 # Checking for excluded directories or files...
-if [ "$fExcludeUsed" = "0" ]; then $strInfoLabel"No additional exclude directories were specified using defaults"; fi
+if $fExcludeUsed; then $strInfoLabel"No additional exclude directories were specified using defaults"; fi
 
 # Checking for processing thread limit...
-if [ "$fThreadUsed" = "0" ]; then $strInfoLabel"No specific amount of processing threads were specified attempting to autodetect"; fi
+if $fThreadUsed; then $strInfoLabel"No specific amount of processing threads were specified attempting to autodetect"; fi
 
 # Checking for time appending...
-if [ "$fTimeUsed" = "0" ]; then $strInfoLabel"No timestamp will be added to the filenames"; fi
+if $fTimeUsed; then $strInfoLabel"No timestamp will be added to the filenames"; fi
 
 # Checking for logging...
-if [ "$fLogUsed" = "0" ]; then
+if $fLogUsed; then
 	$strInfoLabel"No log file will be created"
 else
 	# Exclude log file to prevent circular compression...
